@@ -1,0 +1,13 @@
+diff --git a/vendor/sigs.k8s.io/kustomize/pkg/transformers/config/factorycrd.go b/vendor/sigs.k8s.io/kustomize/pkg/transformers/config/factorycrd.go
+index 66a24dc..c61152a 100644
+--- a/vendor/sigs.k8s.io/kustomize/pkg/transformers/config/factorycrd.go
++++ b/vendor/sigs.k8s.io/kustomize/pkg/transformers/config/factorycrd.go
+@@ -94,7 +94,7 @@ func makeGvkFromTypeName(n string) gvk.Gvk {
+ 	return gvk.Gvk{Kind: kind}
+ }
+ 
+-func looksLikeAk8sType(properties myProperties) bool {
++func looksLikeAk8sType(properties spec.SchemaProperties) bool {
+ 	_, ok := properties["kind"]
+ 	if !ok {
+ 		return false

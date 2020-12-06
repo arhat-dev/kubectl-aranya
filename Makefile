@@ -26,6 +26,8 @@ GOMOD := GOPROXY=direct GOSUMDB=off go mod
 vendor:
 	${GOMOD} tidy
 	${GOMOD} vendor
+	patch -i scripts/patches/fix-kustomize-type-casting.patch \
+		vendor/sigs.k8s.io/kustomize/pkg/transformers/config/factorycrd.go
 
 # testing
 include scripts/test/unit.mk
