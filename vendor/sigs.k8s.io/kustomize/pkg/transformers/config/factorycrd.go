@@ -94,7 +94,7 @@ func makeGvkFromTypeName(n string) gvk.Gvk {
 	return gvk.Gvk{Kind: kind}
 }
 
-func looksLikeAk8sType(properties myProperties) bool {
+func looksLikeAk8sType(properties spec.SchemaProperties) bool {
 	_, ok := properties["kind"]
 	if !ok {
 		return false
