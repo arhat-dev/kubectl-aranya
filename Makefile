@@ -31,28 +31,28 @@ vendor:
 include scripts/test/unit.mk
 
 # binary build
-include scripts/build/template-application-go.mk
+include scripts/build/kubectl-aranya-pf.mk
 
 # image
-include scripts/image/template-application-go.mk
+include scripts/image/kubectl-aranya-pf.mk
 
 image.build.linux.all: \
-	image.build.template-application-go.linux.all
+	image.build.kubectl-aranya-pf.linux.all
 
 image.build.windows.all: \
-	image.build.template-application-go.windows.all
+	image.build.kubectl-aranya-pf.windows.all
 
 image.push.linux.all: \
-	image.push.template-application-go.linux.all
+	image.push.kubectl-aranya-pf.linux.all
 
 image.push.windows.all: \
-	image.push.template-application-go.windows.all
+	image.push.kubectl-aranya-pf.windows.all
 
 # manifest gen
 include scripts/gen/manifests.mk
 
 # packaging
-include scripts/package/template-application-go.mk
+include scripts/package/kubectl-aranya-pf.mk
 
 # optional private scripts
 -include private/scripts.mk

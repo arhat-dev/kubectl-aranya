@@ -1,4 +1,4 @@
-build:image:linux:template-application-go:
+build:image:linux:kubectl-aranya-pf:
   stage: build-images
   image: docker:stable
   services:
@@ -14,14 +14,14 @@ build:image:linux:template-application-go:
   tags:
   - linux
   dependencies:
-  - test:unit:linux:template-application-go
+  - test:unit:linux:kubectl-aranya-pf
 
 # TODO: build windows containers
-# build:image:windows:template-application-go:
+# build:image:windows:kubectl-aranya-pf:
 #   script:
 #   - make image.build.windows.all
 #   - make image.push.windows.all
 #   tags:
 #   - windows
 #   dependencies:
-#   - test:unit:windows:template-application-go
+#   - test:unit:windows:kubectl-aranya-pf

@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-gen.manifests.template-application-go:
+gen.manifests.kubectl-aranya-pf:
 	helm template \
-		template-application-go \
-		cicd/deploy/charts/template-application-go \
+		kubectl-aranya-pf \
+		cicd/deploy/charts/kubectl-aranya-pf \
 		--include-crds --namespace ${NS} --debug \
-		| tee cicd/deploy/kube/template-application-go.yaml
+		| tee cicd/deploy/kube/kubectl-aranya-pf.yaml
