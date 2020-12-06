@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-gen.manifests.kubectl-aranya-pf:
+gen.manifests.kubectl-aranya:
 	helm template \
-		kubectl-aranya-pf \
-		cicd/deploy/charts/kubectl-aranya-pf \
+		kubectl-aranya \
+		cicd/deploy/charts/kubectl-aranya \
 		--include-crds --namespace ${NS} --debug \
-		| tee cicd/deploy/kube/kubectl-aranya-pf.yaml
+		| tee cicd/deploy/kube/kubectl-aranya.yaml

@@ -14,13 +14,24 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package constant
+package conf
 
-type ContextKey string
-
-const (
-	ContextKeyConfig     = ContextKey("config")
-	ContextKeyKubeConfig = ContextKey("kube-config")
-	ContextKeyKubeClient = ContextKey("kube-client")
-	ContextKeyNamespace  = ContextKey("namespace")
+import (
+	"github.com/spf13/pflag"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
 )
+
+type Config struct {
+	kubeConfigFlags *genericclioptions.ConfigFlags
+
+	PortForwardOptions PortForwardOptions
+}
+
+func (c *Config) Flags() *pflag.FlagSet {
+	fs := pflag.NewFlagSet("kubectl-aranya", pflag.ContinueOnError)
+
+	c.kubeConfigFlags = genericclioptions.NewConfigFlags(false)
+	c.kubeConfigFlags.AddFlags(fs)
+
+	return fs
+}

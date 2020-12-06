@@ -14,7 +14,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        path: kubectl-aranya-pf
+        path: kubectl-aranya
 
     - uses: actions/checkout@v2
       with:
@@ -29,11 +29,11 @@ jobs:
 
     - name: Update charts
       run: |
-        for chart in kubectl-aranya-pf/cicd/deploy/charts/*; do
-          chart="${chart#kubectl-aranya-pf/cicd/deploy/charts/}"
+        for chart in kubectl-aranya/cicd/deploy/charts/*; do
+          chart="${chart#kubectl-aranya/cicd/deploy/charts/}"
           echo "Updating chart ${chart}..."
           rm -rf "helm-charts/charts/${chart}"
-          mv "kubectl-aranya-pf/cicd/deploy/charts/${chart}" "helm-charts/charts/${chart}"
+          mv "kubectl-aranya/cicd/deploy/charts/${chart}" "helm-charts/charts/${chart}"
           echo "Chart ${chart} updated"
         done
 
@@ -41,5 +41,5 @@ jobs:
       run: |
         cd helm-charts
         git add --all .
-        git commit -m "Update charts from kubectl-aranya-pf"
+        git commit -m "Update charts from kubectl-aranya"
         git push

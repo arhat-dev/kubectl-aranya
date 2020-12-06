@@ -1,10 +1,10 @@
-# kubectl-aranya-pf
+# kubectl-aranya
 
-[![CI](https://github.com/arhat-dev/kubectl-aranya-pf/workflows/CI/badge.svg)](https://github.com/arhat-dev/kubectl-aranya-pf/actions?query=workflow%3ACI)
-[![Build](https://github.com/arhat-dev/kubectl-aranya-pf/workflows/Build/badge.svg)](https://github.com/arhat-dev/kubectl-aranya-pf/actions?query=workflow%3ABuild)
-[![PkgGoDev](https://pkg.go.dev/badge/arhat.dev/kubectl-aranya-pf)](https://pkg.go.dev/arhat.dev/kubectl-aranya-pf)
-[![GoReportCard](https://goreportcard.com/badge/arhat.dev/kubectl-aranya-pf)](https://goreportcard.com/report/arhat.dev/kubectl-aranya-pf)
-[![codecov](https://codecov.io/gh/arhat-dev/kubectl-aranya-pf/branch/master/graph/badge.svg)](https://codecov.io/gh/arhat-dev/kubectl-aranya-pf)
+[![CI](https://github.com/arhat-dev/kubectl-aranya/workflows/CI/badge.svg)](https://github.com/arhat-dev/kubectl-aranya/actions?query=workflow%3ACI)
+[![Build](https://github.com/arhat-dev/kubectl-aranya/workflows/Build/badge.svg)](https://github.com/arhat-dev/kubectl-aranya/actions?query=workflow%3ABuild)
+[![PkgGoDev](https://pkg.go.dev/badge/arhat.dev/kubectl-aranya)](https://pkg.go.dev/arhat.dev/kubectl-aranya)
+[![GoReportCard](https://goreportcard.com/badge/arhat.dev/kubectl-aranya)](https://goreportcard.com/report/arhat.dev/kubectl-aranya)
+[![codecov](https://codecov.io/gh/arhat-dev/kubectl-aranya/branch/master/graph/badge.svg)](https://codecov.io/gh/arhat-dev/kubectl-aranya)
 
 A kubectl plugin creating custom port-forward stream to aranya controlled virtual nodes
 

@@ -7,12 +7,12 @@
   dependencies:
   - stylecheck
 
-test:unit:linux:kubectl-aranya-pf:
+test:unit:linux:kubectl-aranya:
   extends: .test:unit
   tags:
   - linux
 
-# test:unit:windows:kubectl-aranya-pf:
+# test:unit:windows:kubectl-aranya:
 #   extends: .test:unit
 #   tags:
 #   - windows

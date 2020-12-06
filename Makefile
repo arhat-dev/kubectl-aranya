@@ -31,28 +31,28 @@ vendor:
 include scripts/test/unit.mk
 
 # binary build
-include scripts/build/kubectl-aranya-pf.mk
+include scripts/build/kubectl-aranya.mk
 
 # image
-include scripts/image/kubectl-aranya-pf.mk
+include scripts/image/kubectl-aranya.mk
 
 image.build.linux.all: \
-	image.build.kubectl-aranya-pf.linux.all
+	image.build.kubectl-aranya.linux.all
 
 image.build.windows.all: \
-	image.build.kubectl-aranya-pf.windows.all
+	image.build.kubectl-aranya.windows.all
 
 image.push.linux.all: \
-	image.push.kubectl-aranya-pf.linux.all
+	image.push.kubectl-aranya.linux.all
 
 image.push.windows.all: \
-	image.push.kubectl-aranya-pf.windows.all
+	image.push.kubectl-aranya.windows.all
 
 # manifest gen
 include scripts/gen/manifests.mk
 
 # packaging
-include scripts/package/kubectl-aranya-pf.mk
+include scripts/package/kubectl-aranya.mk
 
 # optional private scripts
 -include private/scripts.mk

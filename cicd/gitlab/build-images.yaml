@@ -1,4 +1,4 @@
-build:image:linux:kubectl-aranya-pf:
+build:image:linux:kubectl-aranya:
   stage: build-images
   image: docker:stable
   services:
@@ -14,14 +14,14 @@ build:image:linux:kubectl-aranya-pf:
   tags:
   - linux
   dependencies:
-  - test:unit:linux:kubectl-aranya-pf
+  - test:unit:linux:kubectl-aranya
 
 # TODO: build windows containers
-# build:image:windows:kubectl-aranya-pf:
+# build:image:windows:kubectl-aranya:
 #   script:
 #   - make image.build.windows.all
 #   - make image.push.windows.all
 #   tags:
 #   - windows
 #   dependencies:
-#   - test:unit:windows:kubectl-aranya-pf
+#   - test:unit:windows:kubectl-aranya

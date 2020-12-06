@@ -30,9 +30,9 @@ _build() {
   eval "$1"
 }
 
-kubectl_aranya_pf() {
+kubectl_aranya() {
   # TODO: set mandatory tags and predefined tags for specific platforms
-  _build "${GOBUILD} -tags='nokube nocloud netgo ${PREDEFINED_BUILD_TAGS} ${TAGS}' ./cmd/kubectl-aranya-pf"
+  _build "${GOBUILD} -tags='nokube nocloud netgo ${PREDEFINED_BUILD_TAGS} ${TAGS}' ./cmd/kubectl-aranya"
 }
 
 COMP=$(printf "%s" "$@" | cut -d. -f1)
@@ -160,11 +160,11 @@ fi
 CGO_FLAGS="CC=${CC} CXX=${CXX} CC_FOR_TARGET=${CC} CXX_FOR_TARGET=${CXX} CGO_CFLAGS_ALLOW='-W' CGO_CFLAGS='${CFLAGS}' CGO_LDFLAGS='${LDFLAGS}'"
 
 GO_LDFLAGS="-s -w \
-  -X arhat.dev/kubectl-aranya-pf/pkg/version.branch=${GIT_BRANCH} \
-  -X arhat.dev/kubectl-aranya-pf/pkg/version.commit=${GIT_COMMIT} \
-  -X arhat.dev/kubectl-aranya-pf/pkg/version.tag=${GIT_TAG} \
-  -X arhat.dev/kubectl-aranya-pf/pkg/version.arch=${ARCH} \
-  -X arhat.dev/kubectl-aranya-pf/pkg/version.goCompilerPlatform=$(go version | cut -d\  -f4)"
+  -X arhat.dev/kubectl-aranya/pkg/version.branch=${GIT_BRANCH} \
+  -X arhat.dev/kubectl-aranya/pkg/version.commit=${GIT_COMMIT} \
+  -X arhat.dev/kubectl-aranya/pkg/version.tag=${GIT_TAG} \
+  -X arhat.dev/kubectl-aranya/pkg/version.arch=${ARCH} \
+  -X arhat.dev/kubectl-aranya/pkg/version.goCompilerPlatform=$(go version | cut -d\  -f4)"
 
 GOARM="$(_get_goarm "${ARCH}")"
 if [ -z "${GOARM}" ]; then

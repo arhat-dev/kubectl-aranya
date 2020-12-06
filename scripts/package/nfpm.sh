@@ -107,7 +107,7 @@ EOF
   mv "${PACKAGE_DIR}/${pkg_file}" ${BUILD_DIR}/.
 }
 
-package_kubectl_aranya_pf() {
+package_kubectl_aranya() {
   config_file="${PACKAGE_DIR}/${COMP}-${ARCH}.config.yaml"
   cat > "${config_file}" <<EOF
 TODO: add sample config here

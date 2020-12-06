@@ -18,80 +18,40 @@ package conf
 
 import (
 	"context"
-	"fmt"
-	"io/ioutil"
+	cmdutil "k8s.io/kubectl/pkg/cmd/util"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 
-	"arhat.dev/pkg/envhelper"
-	"arhat.dev/pkg/log"
-	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v3"
+	"k8s.io/client-go/kubernetes"
 
-	"arhat.dev/kubectl-aranya-pf/pkg/constant"
+	"arhat.dev/kubectl-aranya/pkg/constant"
 )
 
-func ReadConfig(
-	cmd *cobra.Command,
-	configFile *string,
-	cliLogConfig *log.Config,
-	config *Config,
-) (context.Context, error) {
-	flags := cmd.Flags()
-	configBytes, err := ioutil.ReadFile(*configFile)
-	if err != nil && flags.Changed("config") {
-		return nil, fmt.Errorf("failed to read config file %s: %v", *configFile, err)
-	}
+func ReadConfig(config *Config) (context.Context, error) {
+	cmdFactory := cmdutil.NewFactory(config.kubeConfigFlags)
 
-	if len(configBytes) > 0 {
-		configStr := envhelper.Expand(string(configBytes), func(s, origin string) string {
-			// nolint:gocritic
-			switch s {
-			// TODO: add special cases if any
-			default:
-				v, found := os.LookupEnv(s)
-				if found {
-					return v
-				}
-				return origin
-			}
-		})
-
-		dec := yaml.NewDecoder(strings.NewReader(configStr))
-		dec.KnownFields(true)
-		if err = dec.Decode(config); err != nil {
-			return nil, fmt.Errorf("failed to unmarshal config file %s: %v", *configFile, err)
-		}
-	}
-
-	if len(config.App.Log) > 0 {
-		if flags.Changed("log.format") {
-			config.App.Log[0].Format = cliLogConfig.Format
-		}
-
-		if flags.Changed("log.level") {
-			config.App.Log[0].Level = cliLogConfig.Level
-		}
-
-		if flags.Changed("log.file") {
-			config.App.Log[0].File = cliLogConfig.File
-		}
-	} else {
-		config.App.Log = append(config.App.Log, *cliLogConfig)
-	}
-
-	if err = cmd.ParseFlags(os.Args); err != nil {
+	namespace, _, err := cmdFactory.ToRawKubeConfigLoader().Namespace()
+	if err != nil {
 		return nil, err
 	}
 
-	err = log.SetDefaultLogger(config.App.Log)
+	kubeConfig, err := config.kubeConfigFlags.ToRESTConfig()
 	if err != nil {
-		return nil, fmt.Errorf("failed to set default logger: %w", err)
+		return nil, err
 	}
 
-	appCtx, exit := context.WithCancel(context.WithValue(context.Background(), constant.ContextKeyConfig, config))
+	kubeClient, err := kubernetes.NewForConfig(kubeConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	appCtx := context.WithValue(context.Background(), constant.ContextKeyConfig, config)
+	appCtx = context.WithValue(appCtx, constant.ContextKeyKubeConfig, kubeConfig)
+	appCtx = context.WithValue(appCtx, constant.ContextKeyKubeClient, kubeClient)
+	appCtx = context.WithValue(appCtx, constant.ContextKeyNamespace, namespace)
+
+	appCtx, exit := context.WithCancel(appCtx)
 
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
