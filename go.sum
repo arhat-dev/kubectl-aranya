@@ -1,5 +1,7 @@
 arhat.dev/aranya-proto v0.3.2 h1:H/befJ+gUO1FGMME9529fjNsuoRok4gQARx01kiCb90=
 arhat.dev/aranya-proto v0.3.2/go.mod h1:mEX3WnwrKm+M/gQgbBkfrRZ1nu1ME0vaXPk14UZPXmk=
+arhat.dev/aranya-proto v0.3.3 h1:pej8Ngio69C5Fd0vbJRMlShmB04JlbRR4HCwFALlHMI=
+arhat.dev/aranya-proto v0.3.3/go.mod h1:mEX3WnwrKm+M/gQgbBkfrRZ1nu1ME0vaXPk14UZPXmk=
 arhat.dev/arhat-proto v0.4.3 h1:Xu1qQ5OHL1BGYRc9SUfbB7JobisHxWZdCALlnc0iKSs=
 arhat.dev/arhat-proto v0.4.3/go.mod h1:Pd9J0IeEjj8dCxXvMDn+q2f8C04/yS4CUbpOO5jfb4o=
 arhat.dev/libext v0.5.1 h1:CmyLyfAja+EkmBb1I6H/XEG660ZqjBPySrgYaGo3M8A=

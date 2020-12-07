@@ -1,4 +1,4 @@
-# arhat.dev/aranya-proto v0.3.2
+# arhat.dev/aranya-proto v0.3.3
 ## explicit
 arhat.dev/aranya-proto/aranyagopb
 arhat.dev/aranya-proto/aranyagopb/aranyagoconst

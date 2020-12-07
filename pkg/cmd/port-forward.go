@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"arhat.dev/aranya-proto/aranyagopb"
+	"arhat.dev/aranya-proto/aranyagopb/aranyagoconst"
 	"arhat.dev/arhat-proto/arhatgopb"
 	"arhat.dev/libext/codec"
 	"arhat.dev/pkg/nethelper"
@@ -58,13 +59,6 @@ func NewPortForwardCmd(appCtx *context.Context, opts *conf.PortForwardOptions) *
 	}
 
 	return cmd
-}
-
-type portForwardOptions struct {
-	Network string `json:"network"`
-	Address string `json:"address"`
-	Port    int32  `json:"port"`
-	Ordered bool   `json:"ordered"`
 }
 
 // nolint:gocyclo
@@ -125,6 +119,7 @@ func runPortForward(appCtx context.Context, podName string) error {
 		listenNetwork = t.Addr().Network()
 		listenAddr = t.Addr().String()
 		ordered = true
+
 		fwd = &streamForwarder{
 			appExited:             appExited,
 			reqRemoteConnCh:       reqRemoteConnCh,
@@ -157,7 +152,7 @@ func runPortForward(appCtx context.Context, podName string) error {
 		return fmt.Errorf("unknown local network listener implementation: %s", reflect.TypeOf(rawListener).String())
 	}
 
-	pfOpts := &portForwardOptions{
+	pfOpts := &aranyagoconst.CustomPortForwardOptions{
 		Network: opts.RemoteNetwork,
 		Address: opts.RemoteAddress,
 		Port:    opts.RemotePort,
@@ -233,7 +228,7 @@ func runPortForward(appCtx context.Context, podName string) error {
 				return nil, 0, 0, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 			}
 
-			sidStr := resp.Header.Get("X-Aranya-Session-ID")
+			sidStr := resp.Header.Get(aranyagoconst.HeaderSessionID)
 			if sidStr == "" {
 				return nil, 0, 0, fmt.Errorf("unexpected empty session id")
 			}
@@ -243,7 +238,7 @@ func runPortForward(appCtx context.Context, podName string) error {
 				return nil, 0, 0, fmt.Errorf("invalid session id %q: %w", sidStr, err)
 			}
 
-			mtuStr := resp.Header.Get("X-Aranya-Max-Payload-Size")
+			mtuStr := resp.Header.Get(aranyagoconst.HeaderMaxPayloadSize)
 			if mtuStr == "" {
 				return nil, 0, 0, fmt.Errorf("unexpected no max payload size set")
 			}
@@ -578,6 +573,16 @@ func (pf *packetForwarder) run() error {
 	}
 }
 
+func (pf *packetForwarder) doExclusive(f func()) {
+	for !atomic.CompareAndSwapUint32(&pf._working, 0, 1) {
+		runtime.Gosched()
+	}
+
+	f()
+
+	atomic.StoreUint32(&pf._working, 0)
+}
+
 func (pf *packetForwarder) newLocalEndpoint(raddr net.Addr) *localPacketEndpoint {
 	var remoteConn preparedRemoteConn
 	select {
@@ -644,24 +649,14 @@ func (pep *localPacketEndpoint) close() {
 
 func (pep *localPacketEndpoint) writeToRemote(data []byte) {
 	err := pep.enc.Encode(&aranyagopb.Cmd{
-		Kind:      aranyagopb.CMD_DATA_UPSTREAM,
-		Sid:       pep.sid,
-		Seq:       0, // set no sequence since its unordered
-		Completed: true,
-		Payload:   data,
+		Kind:     aranyagopb.CMD_DATA_UPSTREAM,
+		Sid:      pep.sid,
+		Seq:      0, // set no sequence since its unordered
+		Complete: true,
+		Payload:  data,
 	})
 	if err != nil {
 		klog.Infoln(err)
 		return
 	}
-}
-
-func (pf *packetForwarder) doExclusive(f func()) {
-	for !atomic.CompareAndSwapUint32(&pf._working, 0, 1) {
-		runtime.Gosched()
-	}
-
-	f()
-
-	atomic.StoreUint32(&pf._working, 0)
 }
