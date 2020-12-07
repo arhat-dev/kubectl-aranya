@@ -44,10 +44,7 @@ jobs:
         CGO_ENABLED=0 make -j$(nproc --all) kubectl-aranya.freebsd.all TAGS=''
         CGO_ENABLED=0 make -j$(nproc --all) kubectl-aranya.netbsd.all TAGS=''
         CGO_ENABLED=0 make -j$(nproc --all) kubectl-aranya.openbsd.all TAGS=''
-        CGO_ENABLED=0 make -j$(nproc --all) kubectl-aranya.plan9.all TAGS=''
         CGO_ENABLED=0 make -j$(nproc --all) kubectl-aranya.solaris.amd64 TAGS=''
-        CGO_ENABLED=0 make -j$(nproc --all) kubectl-aranya.aix.ppc64 TAGS=''
-        CGO_ENABLED=0 make -j$(nproc --all) kubectl-aranya.dragonfly.amd64 TAGS=''
 
     # - name: Package
     #   run: |
@@ -55,7 +52,7 @@ jobs:
 
     - name: Hash
       run: |
-        os_list="linux freebsd netbsd openbsd plan9 aix solaris dragonfly"
+        os_list="linux freebsd netbsd openbsd solaris"
 
         cd build
         for os in ${os_list}; do
@@ -229,7 +226,7 @@ jobs:
     - name: Create Checksum Files
       run: |
         files="sha256 sha512 md5"
-        os_list="darwin windows freebsd netbsd openbsd plan9 aix solaris dragonfly"
+        os_list="darwin windows freebsd netbsd openbsd solaris"
 
         for f in ${files}; do
           printf "# Linux builds\n\n" > "build/${f}.txt"
@@ -690,86 +687,6 @@ jobs:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_name: kubectl-aranya.netbsd.arm64
         asset_path: build/kubectl-aranya.netbsd.arm64
-        asset_content_type: application/octet-stream
-
-    - name: Upload kubectl-aranya.plan9.x86
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_name: kubectl-aranya.plan9.x86
-        asset_path: build/kubectl-aranya.plan9.x86
-        asset_content_type: application/octet-stream
-
-    - name: Upload kubectl-aranya.plan9.amd64
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_name: kubectl-aranya.plan9.amd64
-        asset_path: build/kubectl-aranya.plan9.amd64
-        asset_content_type: application/octet-stream
-
-    - name: Upload kubectl-aranya.plan9.armv5
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_name: kubectl-aranya.plan9.armv5
-        asset_path: build/kubectl-aranya.plan9.armv5
-        asset_content_type: application/octet-stream
-
-    - name: Upload kubectl-aranya.plan9.armv6
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_name: kubectl-aranya.plan9.armv6
-        asset_path: build/kubectl-aranya.plan9.armv6
-        asset_content_type: application/octet-stream
-
-    - name: Upload kubectl-aranya.plan9.armv7
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_name: kubectl-aranya.plan9.armv7
-        asset_path: build/kubectl-aranya.plan9.armv7
-        asset_content_type: application/octet-stream
-
-    - name: Upload kubectl-aranya.dragonfly.amd64
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_name: kubectl-aranya.dragonfly.amd64
-        asset_path: build/kubectl-aranya.dragonfly.amd64
-        asset_content_type: application/octet-stream
-
-    - name: Upload kubectl-aranya.solaris.amd64
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_name: kubectl-aranya.solaris.amd64
-        asset_path: build/kubectl-aranya.solaris.amd64
-        asset_content_type: application/octet-stream
-
-    - name: Upload kubectl-aranya.aix.ppc64
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_name: kubectl-aranya.aix.ppc64
-        asset_path: build/kubectl-aranya.aix.ppc64
         asset_content_type: application/octet-stream
 
     #

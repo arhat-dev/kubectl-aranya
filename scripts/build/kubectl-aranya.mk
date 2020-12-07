@@ -234,31 +234,3 @@ kubectl-aranya.openbsd.all: \
 
 kubectl-aranya.solaris.amd64:
 	sh scripts/build/build.sh $@
-
-kubectl-aranya.aix.ppc64:
-	sh scripts/build/build.sh $@
-
-kubectl-aranya.dragonfly.amd64:
-	sh scripts/build/build.sh $@
-
-kubectl-aranya.plan9.amd64:
-	sh scripts/build/build.sh $@
-
-kubectl-aranya.plan9.x86:
-	sh scripts/build/build.sh $@
-
-kubectl-aranya.plan9.armv5:
-	sh scripts/build/build.sh $@
-
-kubectl-aranya.plan9.armv6:
-	sh scripts/build/build.sh $@
-
-kubectl-aranya.plan9.armv7:
-	sh scripts/build/build.sh $@
-
-kubectl-aranya.plan9.all: \
-	kubectl-aranya.plan9.amd64 \
-	kubectl-aranya.plan9.armv7 \
-	kubectl-aranya.plan9.x86 \
-	kubectl-aranya.plan9.armv5 \
-	kubectl-aranya.plan9.armv6
