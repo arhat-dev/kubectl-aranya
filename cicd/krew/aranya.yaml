@@ -1,0 +1,37 @@
+apiVersion: krew.googlecontainertools.github.com/v1alpha2
+kind: Plugin
+metadata:
+  name: aranya
+spec:
+  version: v0.0.1
+  homepage: https://github.com/arhat-dev/kubectl-aranya
+  shortDescription: Interact with aranya
+  description: |
+    Interact with aranya managed nodes
+  platforms:
+  - selector:
+      matchLabels:
+        os: linux
+        arch: amd64
+  - selector:
+      matchLabels:
+        os: linux
+        arch: arm
+  - selector:
+      matchLabels:
+        os: linux
+        arch: arm64
+  - selector:
+      matchLabels:
+        os: darwin
+        arch: amd64
+    uri: ""
+    sha256: ""
+    files:
+    - from: kubectl-aranya.darwin.amd64
+      to: ./kubectl-aranya
+    bin: kubectl-aranya
+  - selector:
+      matchLabels:
+        os: windows
+        arch: amd64
