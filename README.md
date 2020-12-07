@@ -6,7 +6,7 @@
 [![GoReportCard](https://goreportcard.com/badge/arhat.dev/kubectl-aranya)](https://goreportcard.com/report/arhat.dev/kubectl-aranya)
 [![codecov](https://codecov.io/gh/arhat-dev/kubectl-aranya/branch/master/graph/badge.svg)](https://codecov.io/gh/arhat-dev/kubectl-aranya)
 
-A kubectl plugin creating custom port-forward stream to aranya controlled virtual nodes
+A kubectl plugin for aranya controlled nodes
 
 ## LICENSE
 
