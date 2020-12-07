@@ -1,6 +1,7 @@
 # arhat.dev/pkg v0.5.3
 ## explicit
 arhat.dev/pkg/nethelper
+arhat.dev/pkg/nethelper/stdnet
 arhat.dev/pkg/wellknownerrors
 # cloud.google.com/go v0.73.0
 ## explicit
