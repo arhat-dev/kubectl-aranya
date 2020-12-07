@@ -53,8 +53,10 @@ func ReadConfig(config *Config) (context.Context, error) {
 		return nil, err
 	}
 
-	if tlsConfig.ServerName == "" && !tlsConfig.InsecureSkipVerify {
-		tlsConfig.ServerName, _, _ = net.SplitHostPort(kubeClient.RESTClient().Get().URL().Host)
+	if tlsConfig != nil {
+		if tlsConfig.ServerName == "" && !tlsConfig.InsecureSkipVerify {
+			tlsConfig.ServerName, _, _ = net.SplitHostPort(kubeClient.RESTClient().Get().URL().Host)
+		}
 	}
 
 	appCtx := context.WithValue(context.Background(), constant.ContextKeyConfig, config)
