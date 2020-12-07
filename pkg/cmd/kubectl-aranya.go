@@ -17,14 +17,16 @@ limitations under the License.
 package cmd
 
 import (
-	"arhat.dev/kubectl-aranya/pkg/conf"
-	"arhat.dev/kubectl-aranya/pkg/constant"
 	"context"
+	"crypto/tls"
 	"fmt"
+
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+
+	"arhat.dev/kubectl-aranya/pkg/conf"
+	"arhat.dev/kubectl-aranya/pkg/constant"
 )
 
 func NewRootCmd() *cobra.Command {
@@ -60,7 +62,7 @@ func NewRootCmd() *cobra.Command {
 
 	// add sub commands
 	for _, c := range []*cobra.Command{
-		NewPortForwardCmd(&appCtx),
+		NewPortForwardCmd(&appCtx, &config.PortForwardOptions),
 	} {
 		subCmd := c
 		subCmd.Flags().AddFlagSet(appConfigFlags)
@@ -68,19 +70,21 @@ func NewRootCmd() *cobra.Command {
 		rootCmd.AddCommand(subCmd)
 	}
 
-	appFlags := rootCmd.Flags()
-	appFlags.AddFlagSet(appConfigFlags)
-	err := viper.BindPFlags(appFlags)
-	if err != nil {
-		panic(err)
-	}
-
 	return rootCmd
 }
 
-func getAppOpts(appCtx context.Context) (_ *kubernetes.Clientset, _ *rest.Config, namespace string, _ *conf.Config) {
-	return appCtx.Value(constant.ContextKeyKubeClient).(*kubernetes.Clientset),
+func getAppOpts(
+	appCtx context.Context,
+) (
+	_ *conf.Config,
+	_ *kubernetes.Clientset,
+	_ *rest.Config,
+	_ *tls.Config,
+	namespace string,
+) {
+	return appCtx.Value(constant.ContextKeyConfig).(*conf.Config),
+		appCtx.Value(constant.ContextKeyKubeClient).(*kubernetes.Clientset),
 		appCtx.Value(constant.ContextKeyKubeConfig).(*rest.Config),
-		appCtx.Value(constant.ContextKeyNamespace).(string),
-		appCtx.Value(constant.ContextKeyConfig).(*conf.Config)
+		appCtx.Value(constant.ContextKeyTLSConfig).(*tls.Config),
+		appCtx.Value(constant.ContextKeyNamespace).(string)
 }

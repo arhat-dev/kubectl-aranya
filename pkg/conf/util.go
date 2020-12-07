@@ -18,12 +18,14 @@ package conf
 
 import (
 	"context"
-	cmdutil "k8s.io/kubectl/pkg/cmd/util"
+	"net"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
+	cmdutil "k8s.io/kubectl/pkg/cmd/util"
 
 	"arhat.dev/kubectl-aranya/pkg/constant"
 )
@@ -41,14 +43,24 @@ func ReadConfig(config *Config) (context.Context, error) {
 		return nil, err
 	}
 
+	tlsConfig, err := rest.TLSConfigFor(kubeConfig)
+	if err != nil {
+		return nil, err
+	}
+
 	kubeClient, err := kubernetes.NewForConfig(kubeConfig)
 	if err != nil {
 		return nil, err
 	}
 
+	if tlsConfig.ServerName == "" && !tlsConfig.InsecureSkipVerify {
+		tlsConfig.ServerName, _, _ = net.SplitHostPort(kubeClient.RESTClient().Get().URL().Host)
+	}
+
 	appCtx := context.WithValue(context.Background(), constant.ContextKeyConfig, config)
 	appCtx = context.WithValue(appCtx, constant.ContextKeyKubeConfig, kubeConfig)
 	appCtx = context.WithValue(appCtx, constant.ContextKeyKubeClient, kubeClient)
+	appCtx = context.WithValue(appCtx, constant.ContextKeyTLSConfig, tlsConfig)
 	appCtx = context.WithValue(appCtx, constant.ContextKeyNamespace, namespace)
 
 	appCtx, exit := context.WithCancel(appCtx)

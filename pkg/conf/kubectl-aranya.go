@@ -17,8 +17,11 @@ limitations under the License.
 package conf
 
 import (
+	"flag"
+
 	"github.com/spf13/pflag"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
+	"k8s.io/klog/v2"
 )
 
 type Config struct {
@@ -32,6 +35,10 @@ func (c *Config) Flags() *pflag.FlagSet {
 
 	c.kubeConfigFlags = genericclioptions.NewConfigFlags(false)
 	c.kubeConfigFlags.AddFlags(fs)
+
+	goFlags := flag.NewFlagSet("klog", flag.ContinueOnError)
+	klog.InitFlags(goFlags)
+	fs.AddGoFlagSet(goFlags)
 
 	return fs
 }

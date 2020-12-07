@@ -18,6 +18,7 @@ package conf
 
 import "github.com/spf13/pflag"
 
+// nolint:maligned
 type PortForwardOptions struct {
 	RemoteNetwork string
 	RemoteAddress string
@@ -31,13 +32,13 @@ type PortForwardOptions struct {
 func (opts *PortForwardOptions) Flags() *pflag.FlagSet {
 	fs := pflag.NewFlagSet("port-forward", pflag.ContinueOnError)
 
-	fs.StringVarP(&opts.RemoteNetwork, "remote-network", "N", "tcp", "set network protocol to be forwarded")
-	fs.StringVarP(&opts.RemoteAddress, "remote-address", "H", "localhost", "set target address to be forwarded")
-	fs.Int32VarP(&opts.RemotePort, "remote-port", "P", 0, "set port for ip network")
+	fs.StringVar(&opts.RemoteNetwork, "remote-network", "tcp", "set network protocol to be forwarded")
+	fs.StringVar(&opts.RemoteAddress, "remote-address", "localhost", "set target address to be forwarded")
+	fs.Int32Var(&opts.RemotePort, "remote-port", 0, "set port for ip network")
 
-	fs.StringVarP(&opts.LocalNetwork, "local-network", "n", "tcp", "set local network protocol")
-	fs.StringVarP(&opts.LocalAddress, "local-address", "l", "localhost", "set local listen address")
-	fs.Int32VarP(&opts.LocalPort, "local-port", "p", 0, "set local listen port")
+	fs.StringVar(&opts.LocalNetwork, "local-network", "tcp", "set local network protocol")
+	fs.StringVar(&opts.LocalAddress, "local-address", "localhost", "set local listen address")
+	fs.Int32Var(&opts.LocalPort, "local-port", 0, "set local listen port")
 
 	return fs
 }

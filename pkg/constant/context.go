@@ -22,5 +22,6 @@ const (
 	ContextKeyConfig     = ContextKey("config")
 	ContextKeyKubeConfig = ContextKey("kube-config")
 	ContextKeyKubeClient = ContextKey("kube-client")
+	ContextKeyTLSConfig  = ContextKey("tls-config")
 	ContextKeyNamespace  = ContextKey("namespace")
 )
