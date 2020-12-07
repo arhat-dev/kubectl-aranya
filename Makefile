@@ -50,9 +50,6 @@ image.push.linux.all: \
 image.push.windows.all: \
 	image.push.kubectl-aranya.windows.all
 
-# manifest gen
-include scripts/gen/manifests.mk
-
 # packaging
 include scripts/package/kubectl-aranya.mk
 
