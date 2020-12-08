@@ -12,7 +12,6 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
-	"net/http/httputil"
 	"reflect"
 	"runtime"
 	"strconv"
@@ -159,13 +158,12 @@ func runPortForward(appCtx context.Context, podName string) error {
 		return fmt.Errorf("unknown local network listener implementation: %s", reflect.TypeOf(rawListener).String())
 	}
 
-	pfOpts := &aranyagoconst.CustomPortForwardOptions{
+	pfOptsBytes, err := json.Marshal(&aranyagoconst.CustomPortForwardOptions{
 		Network: opts.RemoteNetwork,
 		Address: opts.RemoteAddress,
 		Port:    opts.RemotePort,
 		Packet:  isPacket,
-	}
-	pfOptsBytes, err := json.Marshal(pfOpts)
+	})
 	if err != nil {
 		return err
 	}
@@ -204,24 +202,27 @@ func runPortForward(appCtx context.Context, podName string) error {
 			conn = tls.Client(conn, tlsConfig)
 
 			// nolint:staticcheck
-			httpClient := httputil.NewClientConn(conn, nil)
-			postReq, err := http.NewRequestWithContext(appCtx, http.MethodPost, reqURL, bytes.NewReader(pfOptsBytes))
-			if err != nil {
-				return nil, 0, 0, err
-			}
+			postReq, err := http.NewRequestWithContext(
+				appCtx, http.MethodPost, reqURL,
+				bytes.NewReader(pfOptsBytes),
+			)
+			postReq.ContentLength = -1
+			postReq.Close = false
 
-			// Header
+			// Set mandatory Headers
 			//   Connection: Upgrade
-			// is required by kubernetes api-server for port-forward endpoint
+			// required by kubernetes api-server for port-forward api endpoint
 			postReq.Header.Set(httpstream.HeaderConnection, httpstream.HeaderUpgrade)
 
-			resp, err := httpClient.Do(postReq)
+			// do request
+			err = postReq.Write(conn)
 			if err != nil {
-				return nil, 0, 0, err
+				return nil, 0, 0, fmt.Errorf("failed to write request: %w", err)
 			}
 
+			resp, err := http.ReadResponse(bufio.NewReader(conn), postReq)
 			defer func() {
-				if err != nil {
+				if err != nil && resp != nil {
 					respData, err2 := ioutil.ReadAll(resp.Body)
 					_ = resp.Body.Close()
 					if err2 != nil && err2 != io.EOF {
@@ -233,6 +234,9 @@ func runPortForward(appCtx context.Context, podName string) error {
 					}
 				}
 			}()
+			if err != nil {
+				return nil, 0, 0, fmt.Errorf("failed to read response: %w", err)
+			}
 
 			if resp.StatusCode != http.StatusSwitchingProtocols {
 				return nil, 0, 0, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
@@ -257,9 +261,6 @@ func runPortForward(appCtx context.Context, podName string) error {
 			if err != nil {
 				return nil, 0, 0, fmt.Errorf("invalid max payload size %q: %w", mtuStr, err)
 			}
-
-			// expect no data remain unread
-			_, _ = httpClient.Hijack()
 
 			return conn, sid, mtu, nil
 		}
@@ -289,6 +290,11 @@ func runPortForward(appCtx context.Context, podName string) error {
 							}
 						}
 
+						bufSize := 65537
+						if mtu < 65537 {
+							bufSize = int(mtu)
+						}
+
 						select {
 						case <-reqCancelRemoteConnCh:
 							_ = conn.Close()
@@ -297,9 +303,9 @@ func runPortForward(appCtx context.Context, podName string) error {
 							_ = conn.Close()
 							return
 						case preparedRemoteConnCh <- preparedRemoteConn{
-							sid:            sid,
-							maxPayloadSize: mtu,
-							conn:           conn,
+							sid:     sid,
+							bufSize: bufSize,
+							conn:    conn,
 						}:
 							return
 						}
@@ -324,9 +330,9 @@ func runPortForward(appCtx context.Context, podName string) error {
 }
 
 type preparedRemoteConn struct {
-	sid            uint64
-	maxPayloadSize uint64
-	conn           net.Conn
+	sid     uint64
+	bufSize int
+	conn    net.Conn
 }
 
 type forwarder interface {
@@ -429,7 +435,11 @@ checkLoop:
 		}
 	}()
 
-	buf := codec.GetBytesBuf(int(remoteConn.maxPayloadSize))
+	buf := codec.GetBytesBuf(remoteConn.bufSize)
+	defer func() {
+		codec.PutBytesBuf(&buf)
+	}()
+
 	enc := sf.pbCodec.NewEncoder(remoteConn.conn)
 	seq := uint64(0)
 
@@ -437,10 +447,14 @@ checkLoop:
 		// close remote connection since local read has finished
 		_ = remoteConn.conn.Close()
 	}()
+
 	for {
 		n, err2 := conn.Read(buf)
 		if err2 != nil {
-			klog.Infoln(err2)
+			if err2 != io.EOF {
+				klog.Infoln(err2)
+			}
+
 			if n == 0 {
 				return
 			}
@@ -450,9 +464,10 @@ checkLoop:
 		_ = copy(data, buf)
 
 		err2 = enc.Encode(&aranyagopb.Cmd{
-			Kind: aranyagopb.CMD_DATA_UPSTREAM,
-			Sid:  remoteConn.sid,
-			Seq:  seq, // set sequence so aranya won't need to decode and encode
+			Kind:    aranyagopb.CMD_DATA_UPSTREAM,
+			Sid:     remoteConn.sid,
+			Seq:     seq, // set sequence so aranya won't need to decode and encode
+			Payload: data,
 		})
 		if err2 != nil {
 			klog.Infoln(err2)
@@ -522,14 +537,10 @@ func (pf *packetForwarder) run() error {
 	case initialRemoteConn = <-pf.preparedRemoteConnCh:
 	}
 
-	bufSize := uint64(65537)
-	if initialRemoteConn.maxPayloadSize < bufSize {
-		bufSize = initialRemoteConn.maxPayloadSize
-	}
-
 	go pf.checkEndpointAlive()
 
-	buf := make([]byte, bufSize)
+	// bufSize is immutable for one EdgeDevice when it's online
+	buf := make([]byte, initialRemoteConn.bufSize)
 	for {
 		n, raddr, err := pf.listener.ReadFrom(buf)
 		if err != nil {
