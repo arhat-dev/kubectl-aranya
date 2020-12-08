@@ -165,7 +165,7 @@ func runPortForward(appCtx context.Context, podName string) error {
 		Packet:  isPacket,
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to marshal port-forward options: %w", err)
 	}
 
 	_, err = kubeClient.CoreV1().Pods(namespace).Get(appCtx, podName, metav1.GetOptions{})
@@ -260,6 +260,19 @@ func runPortForward(appCtx context.Context, podName string) error {
 			mtu, err = strconv.ParseUint(mtuStr, 10, 64)
 			if err != nil {
 				return nil, 0, 0, fmt.Errorf("invalid max payload size %q: %w", mtuStr, err)
+			}
+
+			startMsg := []byte("\r\nport-forward\r\n")
+			var (
+				n   int
+				sum int
+			)
+			for sum != len(startMsg) {
+				n, err = conn.Write(startMsg)
+				if err != nil {
+					return nil, 0, 0, fmt.Errorf("failed to mark port-forward start: %w", err)
+				}
+				sum += n
 			}
 
 			return conn, sid, mtu, nil
