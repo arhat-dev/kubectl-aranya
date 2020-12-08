@@ -188,7 +188,7 @@ func runPortForward(appCtx context.Context, podName string) error {
 			KeepAlive: 30 * time.Second,
 		}
 
-		createConn := func() (_ net.Conn, sid, mtu uint64, err error) {
+		createConn := func() (_ net.Conn, sid uint64, mtu int64, err error) {
 			conn, err := dialer.DialContext(appCtx, "tcp", pfReqURL.Host)
 			if err != nil {
 				return nil, 0, 0, err
@@ -257,9 +257,13 @@ func runPortForward(appCtx context.Context, podName string) error {
 				return nil, 0, 0, fmt.Errorf("unexpected no max payload size set")
 			}
 
-			mtu, err = strconv.ParseUint(mtuStr, 10, 64)
+			mtu, err = strconv.ParseInt(mtuStr, 10, 64)
 			if err != nil {
 				return nil, 0, 0, fmt.Errorf("invalid max payload size %q: %w", mtuStr, err)
+			}
+
+			if mtu <= 0 {
+				return nil, 0, 0, fmt.Errorf("unexpected max payload size %q", mtuStr)
 			}
 
 			startMsg := []byte("\r\nport-forward\r\n")
