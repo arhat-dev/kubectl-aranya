@@ -3,7 +3,7 @@ module arhat.dev/kubectl-aranya
 go 1.15
 
 require (
-	arhat.dev/aranya-proto v0.3.3
+	arhat.dev/aranya-proto v0.3.4-0.20201208110348-80e0beff3693
 	arhat.dev/arhat-proto v0.4.3
 	arhat.dev/libext v0.5.1
 	arhat.dev/pkg v0.5.3

@@ -1,9 +1,11 @@
 package cmd
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"crypto/tls"
+	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -75,8 +77,11 @@ func runPortForward(appCtx context.Context, podName string) error {
 	opts := config.PortForwardOptions
 
 	listenAddr := opts.LocalAddress
-	if !strings.HasPrefix(opts.LocalNetwork, "unix") {
-		// not unix listen addr, add port any way
+	switch {
+	case strings.HasPrefix(opts.LocalNetwork, "unix"):
+	case strings.HasPrefix(opts.LocalNetwork, "ip"):
+	default:
+		// not unix/ip network
 		listenAddr = net.JoinHostPort(opts.LocalAddress, strconv.FormatInt(int64(opts.LocalPort), 10))
 	}
 
@@ -87,7 +92,9 @@ func runPortForward(appCtx context.Context, podName string) error {
 
 	listenerCloser, ok := rawListener.(io.Closer)
 	if !ok {
-		return fmt.Errorf("invalid network listen not implementing io.Closer")
+		panic(fmt.Sprintf(
+			"invalid %q listener not implementing io.Closer", opts.LocalNetwork,
+		))
 	}
 	defer func() {
 		_ = listenerCloser.Close()
@@ -102,7 +109,7 @@ func runPortForward(appCtx context.Context, podName string) error {
 	// validate listener
 	var (
 		listenNetwork string
-		ordered       bool
+		isPacket      bool
 		fwd           forwarder
 
 		appExited             = appCtx.Done()
@@ -118,7 +125,7 @@ func runPortForward(appCtx context.Context, podName string) error {
 		// stream oriented
 		listenNetwork = t.Addr().Network()
 		listenAddr = t.Addr().String()
-		ordered = true
+		isPacket = false
 
 		fwd = &streamForwarder{
 			appExited:             appExited,
@@ -133,7 +140,7 @@ func runPortForward(appCtx context.Context, podName string) error {
 		// packet oriented
 		listenNetwork = t.LocalAddr().Network()
 		listenAddr = t.LocalAddr().String()
-		ordered = false
+		isPacket = true
 
 		fwd = &packetForwarder{
 			appExited:             appExited,
@@ -156,7 +163,7 @@ func runPortForward(appCtx context.Context, podName string) error {
 		Network: opts.RemoteNetwork,
 		Address: opts.RemoteAddress,
 		Port:    opts.RemotePort,
-		Ordered: ordered,
+		Packet:  isPacket,
 	}
 	pfOptsBytes, err := json.Marshal(pfOpts)
 	if err != nil {
@@ -166,7 +173,7 @@ func runPortForward(appCtx context.Context, podName string) error {
 	_, err = kubeClient.CoreV1().Pods(namespace).Get(appCtx, podName, metav1.GetOptions{})
 	if err != nil {
 		if !kubeerrors.IsForbidden(err) {
-			// no permission for get pod, port-forward directly
+			// no permission to get pod, port-forward directly
 			return err
 		}
 	}
@@ -203,6 +210,9 @@ func runPortForward(appCtx context.Context, podName string) error {
 				return nil, 0, 0, err
 			}
 
+			// Header
+			//   Connection: Upgrade
+			// is required by kubernetes api-server for port-forward endpoint
 			postReq.Header.Set(httpstream.HeaderConnection, httpstream.HeaderUpgrade)
 
 			resp, err := httpClient.Do(postReq)
@@ -301,7 +311,8 @@ func runPortForward(appCtx context.Context, podName string) error {
 
 	fmt.Printf("Forwarding %s://%s -> %s://%s:%d@%s\n",
 		listenNetwork, listenAddr,
-		opts.RemoteNetwork, opts.RemoteAddress, opts.RemotePort, podName,
+		opts.RemoteNetwork, opts.RemoteAddress,
+		opts.RemotePort, podName,
 	)
 
 	err = fwd.run()
@@ -564,6 +575,12 @@ func (pf *packetForwarder) run() error {
 				})
 
 				ep.run()
+
+				// local endpoint exited, mark it not alive
+				pf.doExclusive(func() {
+					delete(pf.localEndpoints, raddr)
+					delete(pf.alive, raddr)
+				})
 			}()
 		})
 
@@ -598,46 +615,49 @@ func (pf *packetForwarder) newLocalEndpoint(raddr net.Addr) *localPacketEndpoint
 	}
 
 	return &localPacketEndpoint{
-		raddr: raddr,
-		conn:  pf.listener,
+		raddr:    raddr,
+		listener: pf.listener,
 
 		sid:        remoteConn.sid,
+		seq:        0,
 		remoteConn: remoteConn.conn,
 		enc:        pf.pbCodec.NewEncoder(remoteConn.conn),
-		dec:        pf.pbCodec.NewDecoder(remoteConn.conn),
 	}
 }
 
 type localPacketEndpoint struct {
-	raddr net.Addr
-	conn  net.PacketConn
+	raddr    net.Addr
+	listener net.PacketConn
 
 	sid        uint64
+	seq        uint64
 	remoteConn net.Conn
 	enc        codec.Encoder
-	dec        codec.Decoder
 }
 
 func (pep *localPacketEndpoint) run() {
-	msg := new(aranyagopb.Msg)
-
+	br := bufio.NewReader(pep.remoteConn)
 	for {
-		msg.Payload = nil
-
-		err := pep.dec.Decode(msg)
+		size, err := binary.ReadUvarint(br)
 		if err != nil {
-			if len(msg.Payload) == 0 {
-				break
-			}
+			klog.Infoln(err)
 
 			// close remote conn to ensure local listener won't send data through it
 			_ = pep.remoteConn.Close()
+			return
 		}
 
-		_, err = pep.conn.WriteTo(msg.Payload, pep.raddr)
+		data := make([]byte, size)
+		_, err = io.ReadFull(br, data)
+		if err != nil {
+			klog.Infoln(err)
+			return
+		}
+
+		_, err = pep.listener.WriteTo(data, pep.raddr)
 		if err != nil && err != io.EOF {
 			klog.Infoln(err)
-			// failed to write to local conn
+			// failed to write to local conn, we can do nothing
 			return
 		}
 	}
@@ -651,8 +671,8 @@ func (pep *localPacketEndpoint) writeToRemote(data []byte) {
 	err := pep.enc.Encode(&aranyagopb.Cmd{
 		Kind:     aranyagopb.CMD_DATA_UPSTREAM,
 		Sid:      pep.sid,
-		Seq:      0, // set no sequence since its unordered
-		Complete: true,
+		Seq:      atomic.AddUint64(&pep.seq, 1) - 1,
+		Complete: false,
 		Payload:  data,
 	})
 	if err != nil {
