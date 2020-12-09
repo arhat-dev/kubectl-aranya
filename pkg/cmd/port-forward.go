@@ -379,26 +379,24 @@ func (sf *streamForwarder) run() error {
 			return err2
 		}
 
-		// request a new remote connection
-		select {
-		case <-sf.appExited:
-			_ = conn.Close()
-			return nil
-		case sf.reqRemoteConnCh <- struct{}{}:
-		}
-
-		klog.Infoln("Handling connection", conn.RemoteAddr().String())
-
 		go sf.handleRemote(conn)
 	}
 }
 
 func (sf *streamForwarder) handleRemote(conn net.Conn) {
-	finished := make(chan struct{})
+	klog.Infoln("Handling connection from", conn.RemoteAddr().String())
+
+	// request a new remote connection
+	select {
+	case <-sf.appExited:
+		_ = conn.Close()
+		return
+	case sf.reqRemoteConnCh <- struct{}{}:
+		klog.Infoln("Requested new remote connection for", conn.RemoteAddr().String())
+	}
+
 	defer func() {
 		_ = conn.Close()
-
-		close(finished)
 	}()
 
 	var remoteConn preparedRemoteConn
@@ -407,9 +405,15 @@ checkLoop:
 	for {
 		select {
 		case remoteConn = <-sf.preparedRemoteConnCh:
+			klog.Infoln("Assigned new remote connection for", conn.RemoteAddr().String())
 			if !timer.Stop() {
 				<-timer.C
 			}
+
+			defer func() {
+				// always close remote connection on local exit
+				_ = remoteConn.conn.Close()
+			}()
 
 			break checkLoop
 		case <-sf.appExited:
@@ -444,7 +448,17 @@ checkLoop:
 		}
 	}
 
+	klog.Infoln(
+		"Forwarding", conn.RemoteAddr().String(),
+		"through", remoteConn.conn.LocalAddr().String(),
+	)
 	go func() {
+		defer func() {
+			klog.Infoln("Finished reading from remote")
+			_ = remoteConn.conn.Close()
+			_ = conn.Close()
+		}()
+
 		// data is ordered, do not need to decode aranya-proto packets, always raw data
 		_, err2 := io.Copy(conn, remoteConn.conn)
 		if err2 != nil && err2 != io.EOF {
@@ -459,11 +473,6 @@ checkLoop:
 
 	enc := sf.pbCodec.NewEncoder(remoteConn.conn)
 	seq := uint64(0)
-
-	defer func() {
-		// close remote connection since local read has finished
-		_ = remoteConn.conn.Close()
-	}()
 
 	for {
 		n, err2 := conn.Read(buf)
@@ -664,6 +673,12 @@ type localPacketEndpoint struct {
 }
 
 func (pep *localPacketEndpoint) run() {
+	klog.Infof(
+		"Handling connection from %s, sid = %s\n",
+		pep.raddr.String(),
+		strconv.FormatUint(pep.sid, 10),
+	)
+
 	br := bufio.NewReader(pep.remoteConn)
 	for {
 		size, err := binary.ReadUvarint(br)
