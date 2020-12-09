@@ -4,11 +4,10 @@ arhat.dev/aranya-proto v0.3.4-0.20201208110348-80e0beff3693 h1:9jIYtvRAfHj6qeb6V
 arhat.dev/aranya-proto v0.3.4-0.20201208110348-80e0beff3693/go.mod h1:mEX3WnwrKm+M/gQgbBkfrRZ1nu1ME0vaXPk14UZPXmk=
 arhat.dev/arhat-proto v0.4.3 h1:Xu1qQ5OHL1BGYRc9SUfbB7JobisHxWZdCALlnc0iKSs=
 arhat.dev/arhat-proto v0.4.3/go.mod h1:Pd9J0IeEjj8dCxXvMDn+q2f8C04/yS4CUbpOO5jfb4o=
-arhat.dev/libext v0.5.1 h1:CmyLyfAja+EkmBb1I6H/XEG660ZqjBPySrgYaGo3M8A=
-arhat.dev/libext v0.5.1/go.mod h1:tZM11MfOpLE4ZMA/okvzJm79DyiNoLcZnxGZ4afO8Qk=
-arhat.dev/pkg v0.5.2/go.mod h1:ybuHVZ+40dZGBn7/vQrJCJBYfdH1cWSJvHWInES6AaQ=
-arhat.dev/pkg v0.5.3 h1:ztSdO2kSpHwiftjEsLBFB5e7FxP+GJXUzi9b2XLKYc8=
-arhat.dev/pkg v0.5.3/go.mod h1:ybuHVZ+40dZGBn7/vQrJCJBYfdH1cWSJvHWInES6AaQ=
+arhat.dev/libext v0.5.2-0.20201208233443-d57bd3078361 h1:UVkX5uOWhTyQuG4j83ivNaSwv9GyDSMEE/jLPobNC1c=
+arhat.dev/libext v0.5.2-0.20201208233443-d57bd3078361/go.mod h1:sqbYhRpOvwpKTFYEowMord+Ws9RgV+zuS2L2DN/oBJM=
+arhat.dev/pkg v0.5.4-0.20201208233302-107b8822e93b h1:6tCnJkIl78Ovj7r9QCUBtdaPS14dT2OjUtO785LlytM=
+arhat.dev/pkg v0.5.4-0.20201208233302-107b8822e93b/go.mod h1:ybuHVZ+40dZGBn7/vQrJCJBYfdH1cWSJvHWInES6AaQ=
 bitbucket.org/bertimus9/systemstat v0.0.0-20180207000608-0eeff89b0690/go.mod h1:Ulb78X89vxKYgdL24HMTiXYHlyHEvruOj1ZPlqeNEZM=
 cloud.google.com/go v0.26.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
 cloud.google.com/go v0.34.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=

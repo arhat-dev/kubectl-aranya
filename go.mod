@@ -5,8 +5,8 @@ go 1.15
 require (
 	arhat.dev/aranya-proto v0.3.4-0.20201208110348-80e0beff3693
 	arhat.dev/arhat-proto v0.4.3
-	arhat.dev/libext v0.5.1
-	arhat.dev/pkg v0.5.3
+	arhat.dev/libext v0.5.2-0.20201208233443-d57bd3078361
+	arhat.dev/pkg v0.5.4-0.20201208233302-107b8822e93b
 	cloud.google.com/go v0.73.0 // indirect
 	github.com/Azure/go-autorest/autorest v0.11.13 // indirect
 	github.com/Azure/go-autorest/autorest/adal v0.9.8 // indirect

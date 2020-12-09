@@ -6,11 +6,11 @@ arhat.dev/aranya-proto/aranyagopb/runtimepb
 # arhat.dev/arhat-proto v0.4.3
 ## explicit
 arhat.dev/arhat-proto/arhatgopb
-# arhat.dev/libext v0.5.1
+# arhat.dev/libext v0.5.2-0.20201208233443-d57bd3078361
 ## explicit
 arhat.dev/libext/codec
 arhat.dev/libext/codec/gogoprotobuf
-# arhat.dev/pkg v0.5.3
+# arhat.dev/pkg v0.5.4-0.20201208233302-107b8822e93b
 ## explicit
 arhat.dev/pkg/nethelper
 arhat.dev/pkg/nethelper/stdnet
