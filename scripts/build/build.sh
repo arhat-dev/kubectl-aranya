@@ -32,7 +32,7 @@ _build() {
 
 kubectl_aranya() {
   # TODO: set mandatory tags and predefined tags for specific platforms
-  _build "${GOBUILD} -tags='nokube nocloud netgo ${PREDEFINED_BUILD_TAGS} ${TAGS}' ./cmd/kubectl-aranya"
+  _build "CGO_ENABLED=0 ${GOBUILD} -tags='nokube nocloud netgo ${PREDEFINED_BUILD_TAGS} ${TAGS}' ./cmd/kubectl-aranya"
 }
 
 COMP=$(printf "%s" "$@" | cut -d. -f1)

@@ -40,11 +40,11 @@ jobs:
 
     - name: Build
       run: |
-        CGO_ENABLED=0 make -j$(nproc --all) kubectl-aranya.linux.all
-        CGO_ENABLED=0 make -j$(nproc --all) kubectl-aranya.freebsd.all TAGS=''
-        CGO_ENABLED=0 make -j$(nproc --all) kubectl-aranya.netbsd.all TAGS=''
-        CGO_ENABLED=0 make -j$(nproc --all) kubectl-aranya.openbsd.all TAGS=''
-        CGO_ENABLED=0 make -j$(nproc --all) kubectl-aranya.solaris.amd64 TAGS=''
+        make -j$(nproc --all) kubectl-aranya.linux.all
+        make -j$(nproc --all) kubectl-aranya.freebsd.all TAGS=''
+        make -j$(nproc --all) kubectl-aranya.netbsd.all TAGS=''
+        make -j$(nproc --all) kubectl-aranya.openbsd.all TAGS=''
+        make -j$(nproc --all) kubectl-aranya.solaris.amd64 TAGS=''
 
     # - name: Package
     #   run: |
@@ -80,7 +80,7 @@ jobs:
 
     - name: Build
       run: |
-        CGO_ENABLED=1 make kubectl-aranya.darwin.all
+        make kubectl-aranya.darwin.all
 
     # # TODO: Support macos packaging
     # - name: Package
@@ -117,7 +117,7 @@ jobs:
 
     - name: Build
       run: |
-        CGO_ENABLED=0 make -j$(nproc --all) kubectl-aranya.windows.all
+        make -j$(nproc --all) kubectl-aranya.windows.all
 
     # # TODO: Support windows packaging
     # - name: Package
